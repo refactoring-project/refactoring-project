@@ -30,13 +30,20 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'uv'
 
       - name: Install uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Setup uv cache
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
 
       - name: Dependence settings
         run: uv sync --all-groups
@@ -51,7 +58,8 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_HOST: localhost
-          SECRET_KEY: ${{ secrets.DJANGO }}
+          DJANGO: ${{ secrets.DJANGO }}
+          DJANGO_SETTINGS_MODULE: config.settings.base
         run: uv run python manage.py test
 
       - name: Migrations
@@ -61,7 +69,8 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_HOST: localhost
-          SECRET_KEY: ${{ secrets.DJANGO }}
+          DJANGO: ${{ secrets.DJANGO }}
+          DJANGO_SETTINGS_MODULE: config.settings.base
         run: |
           uv run python manage.py makemigrations --check --dry-run
           uv run python manage.py migrate
