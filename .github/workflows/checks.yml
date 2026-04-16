@@ -59,6 +59,7 @@ jobs:
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_HOST: localhost
           SECRET_KEY: ${{ secrets.DJANGO }}
+          DJANGO_SETTINGS_MODULE: config.settings.base
         run: uv run python manage.py test
 
       - name: Migrations
